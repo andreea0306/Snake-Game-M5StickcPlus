@@ -1,6 +1,8 @@
 #include <M5StickCPlus.h>
 #include <vector>
 #include <utility> 
+#include <EEPROM.h>
+
 #include "Gfx.cpp"
 #include "Food.cpp"
 #include "Snake.cpp"
@@ -12,8 +14,10 @@ int score;
 // used for using the accelerometer sensor
 MPU6886 IMU; // create an instance of the MPU6886 class 
 Gfx gfx(WIDTH, HEIGHT, GRID_SIZE); // create an instance of graphic class
+int snakeSpeed; // storages the value of speed depending on level dificulty
 
-int snakeSpeed;
+int address = 0; // address where maxScore will be stored
+int maxScore = EEPROM.read(address); // value of maxScore from eeprom 
 
 // function for game logic
 void gameLoop() {
@@ -48,11 +52,23 @@ void gameLoop() {
       M5.Lcd.setCursor(10, 60);
       M5.Lcd.setTextSize(2);
       M5.Lcd.setTextColor(BLACK);
+      M5.Lcd.print("Score: ");
       M5.Lcd.println(score);
+      maxScore = EEPROM.read(address);
+      //Serial.print(maxScore);
+      if(score > maxScore) {
+        EEPROM.write(address, score);
+        EEPROM.commit();
+        maxScore = score;
+        Serial.print(maxScore);
+      }
+      M5.Lcd.print("Max score:");
+      M5.Lcd.print(EEPROM.read(address));
       
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
       food = Food();
       score++;
+
       snake.growSnake();
     }
     
@@ -67,7 +83,7 @@ void gameLoop() {
     } else {
       snakeSpeed = SNAKE_SPEED_HARD;
     }
-    Serial.print(snakeSpeed);
+    //Serial.print(snakeSpeed);
     // speed of snake
     delay(snakeSpeed); 
   }
@@ -83,6 +99,7 @@ void setup() {
   M5.IMU.Init();
   Serial.begin(9600); 
   M5.Lcd.setRotation(0);  
+  EEPROM.begin(1000);
 }
 
 void loop(){
@@ -95,7 +112,6 @@ void loop(){
     gameLoop();
     delay(2000);
     gfx.drawMenu();
-    //delay(2000);
   } else {
     while(digitalRead(M5_BUTTON_RST) == HIGH && digitalRead(M5_BUTTON_HOME) == HIGH) {
       delay(50);
