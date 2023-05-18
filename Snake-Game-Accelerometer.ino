@@ -3,9 +3,9 @@
 #include <utility> 
 #include <EEPROM.h>
 
-#include "Gfx.cpp"
-#include "Food.cpp"
-#include "Snake.cpp"
+#include "Gfx.hpp"
+#include "Food.hpp"
+#include "Snake.hpp"
 
 // variables used
 
