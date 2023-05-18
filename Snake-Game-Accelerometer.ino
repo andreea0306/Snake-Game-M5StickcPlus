@@ -15,9 +15,15 @@ int score;
 MPU6886 IMU; // create an instance of the MPU6886 class 
 Gfx gfx(WIDTH, HEIGHT, GRID_SIZE); // create an instance of graphic class
 int snakeSpeed; // storages the value of speed depending on level dificulty
+int buzzerPin = 10;
 
 int address = 0; // address where maxScore will be stored
 int maxScore = EEPROM.read(address); // value of maxScore from eeprom 
+
+void playTone(int frequency, int duration) {
+  tone(buzzerPin, frequency, duration);
+  noTone(buzzerPin);
+}
 
 // function for game logic
 void gameLoop() {
@@ -68,7 +74,7 @@ void gameLoop() {
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
       food = Food();
       score++;
-
+      playTone(458, 1000);
       snake.growSnake();
     }
     
@@ -92,6 +98,7 @@ void gameLoop() {
 
 void setup() {
   M5.begin();
+  pinMode(buzzerPin, OUTPUT);
   gfx.drawMenu();
   pinMode(M5_BUTTON_HOME, INPUT);
   pinMode(M5_BUTTON_RST, INPUT);
