@@ -15,9 +15,7 @@ int score;
 MPU6886 IMU; // create an instance of the MPU6886 class 
 Gfx gfx(WIDTH, HEIGHT, GRID_SIZE); // create an instance of graphic class
 int snakeSpeed; // storages the value of speed depending on level dificulty
-int buzzerPin = 10;
 
-int address = 0; // address where maxScore will be stored
 int maxScore = EEPROM.read(address); // value of maxScore from eeprom 
 
 void playTone(int frequency, int duration) {
@@ -31,7 +29,7 @@ void gameLoop() {
   float ax = 0, ay = 0, az = 0;
   score = 0;
   Food food;
-  Snake snake(18, 18, gfx);
+  Snake snake(STARTX, STARTY, gfx);
   gfx.drawBackgroundMap();
 
   bool gameOver = false;
@@ -40,41 +38,37 @@ void gameLoop() {
     // getting data from sensor
     M5.IMU.getAccelData(&ax,&ay,&az);
     // compare data from sensor to a user defined thrashold 
-    if(ax*10 > THRESHOLD) {
-      snake.setSnakeDirection(2);
-    } else if(ax*10 < -THRESHOLD) {
-      snake.setSnakeDirection(0);
+    if(ax*10 > THRESHOLD && snake.getSnakeDirection() != 0) { // if direction is already opposite the command has no effect
+      snake.setSnakeDirection(2); // left
+    } else if(ax*10 < -THRESHOLD && snake.getSnakeDirection() != 2) {
+      snake.setSnakeDirection(0); // right
     }
-    else if(ay*10 > THRESHOLD) {
-      snake.setSnakeDirection(1);
-    } else if(ay*10 < -THRESHOLD){
-      snake.setSnakeDirection(3);
+    else if(ay*10 > THRESHOLD && snake.getSnakeDirection() != 3) {
+      snake.setSnakeDirection(1); // down
+    } else if(ay*10 < -THRESHOLD && snake.getSnakeDirection() != 1){
+      snake.setSnakeDirection(3); // up
     }
     snake.moveSnake();
     
     //checking collision with food
     if(snake.checkSnakeCollision()) {
       gameOver = true;
-      M5.Lcd.setCursor(10, 60);
-      M5.Lcd.setTextSize(2);
-      M5.Lcd.setTextColor(BLACK);
-      M5.Lcd.print("Score: ");
-      M5.Lcd.println(score);
+      gfx.drawBackgroundMap();
+      
       maxScore = EEPROM.read(address);
       //Serial.print(maxScore);
       if(score > maxScore) {
         EEPROM.write(address, score);
         EEPROM.commit();
         maxScore = score;
-        Serial.print(maxScore);
+        //Serial.print(maxScore);
       }
-      M5.Lcd.print("Max score:");
-      M5.Lcd.print(EEPROM.read(address));
-      
+      gfx.printScore(score, EEPROM.read(address));
+
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
       food = Food();
       score++;
-      playTone(458, 1000);
+      playTone(NOTE_C5, TONE_DURATION);
       snake.growSnake();
     }
     
@@ -83,10 +77,17 @@ void gameLoop() {
     
     // increasing dificulty by increasing the speed of snake
     if(score >= 0 && score < 5) {
+      gfx.setLevel(0);
+      snake.setGfx(gfx);
       snakeSpeed = SNAKE_SPEED_EASY;
-    } else if(score >= 5 && score < 10){
+    } else if(score >= 2 && score < 10){
+      gfx.setLevel(1);
+      snake.setGfx(gfx);
       snakeSpeed = SNAKE_SPEED_MEDIUM;
     } else {
+      gfx.setLevel(2);
+      snake.setGfx(gfx);
+      food.setLevel(2);
       snakeSpeed = SNAKE_SPEED_HARD;
     }
     //Serial.print(snakeSpeed);
@@ -104,25 +105,25 @@ void setup() {
   pinMode(M5_BUTTON_RST, INPUT);
   Wire.begin();
   M5.IMU.Init();
-  Serial.begin(9600); 
+  Serial.begin(baud_rate); 
   M5.Lcd.setRotation(0);  
-  EEPROM.begin(1000);
+  EEPROM.begin(EEPROM_SIZE);
 }
 
 void loop(){
  
   if(digitalRead(M5_BUTTON_RST) == LOW) {
     gfx.drawInstructions();
-    delay(8000);
+    delay(instructions_delay);
     gfx.drawMenu();
   } else if(digitalRead(M5_BUTTON_HOME) == LOW){
     gameLoop();
-    delay(2000);
+    delay(menu_delay);
     gfx.drawMenu();
   } else {
     while(digitalRead(M5_BUTTON_RST) == HIGH && digitalRead(M5_BUTTON_HOME) == HIGH) {
-      delay(50);
+      delay(basic_delay);
     }
   }
-  delay(50);
+  delay(basic_delay);
 }

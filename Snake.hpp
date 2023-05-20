@@ -48,6 +48,10 @@ public:
     direction = newDirection;
   }
 
+  int getSnakeDirection() {
+    return direction;
+  }
+
   bool checkSnakeCollision() {
     std::pair<int,int> head = std::make_pair(body[0].first, body[0].second);
     // checking collison with walls
