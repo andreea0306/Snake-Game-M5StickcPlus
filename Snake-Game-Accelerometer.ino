@@ -4,8 +4,9 @@
 #include <EEPROM.h>
 #include <Ticker.h>
 #include "Gfx.hpp"
-#include "Food.hpp"
 #include "Snake.hpp"
+#include "Food.hpp"
+
 
 // variables used
 
@@ -29,11 +30,10 @@ void gameLoop() {
   // variables for storage the output of sensor
   float ax = 0, ay = 0, az = 0;
   score = 0;
-  Food food;
   Snake snake(STARTX, STARTY, gfx);
-  gfx.drawBackgroundMap();
-
+  Food food(snake);
   bool gameOver = false;
+  gfx.drawBackgroundMap();
   // game play
   while(!gameOver) {
     
@@ -55,8 +55,7 @@ void gameLoop() {
     //checking collision with food
     if(snake.checkSnakeCollision()) {
       gameOver = true;
-      gfx.drawBackgroundMap();
-      
+            
       maxScore = EEPROM.read(address);
       //Serial.print(maxScore);
       if(score > maxScore) {
@@ -68,10 +67,20 @@ void gameLoop() {
       gfx.printScore(score, EEPROM.read(address));
      
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
-      food = Food();
+      food = Food(snake);
       score++;
       playTone(NOTE_C5, TONE_DURATION);
       snake.growSnake();
+      if(score == 5) {
+        gfx.setLevel(1);
+        snake.setGfx(gfx);
+        gfx.drawBackgroundMap();
+      } else if(score == 10) {
+        gfx.setLevel(2);
+        snake.setGfx(gfx);
+        gfx.drawBackgroundMap();
+      }
+      
     }
     
     snake.drawSnake();
@@ -79,12 +88,14 @@ void gameLoop() {
     
     // increasing dificulty by increasing the speed of snake
     if(score >= 0 && score < 5) {
+      food.setLevel(0);
       gfx.setLevel(0);
       snake.setGfx(gfx);
       snakeSpeed = SNAKE_SPEED_EASY;
-    } else if(score >= 2 && score < 10){
+    } else if(score >= 5 && score < 10){
       gfx.setLevel(1);
       snake.setGfx(gfx);
+      food.setLevel(1);
       snakeSpeed = SNAKE_SPEED_MEDIUM;
     } else {
       gfx.setLevel(2);
@@ -114,8 +125,8 @@ void demoGame() {
     // variables for storage the output of sensor
   float ax = 0, ay = 0, az = 0;
   score = 0;
-  Food food;
   Snake snake(STARTX, STARTY, gfx);
+  Food food(snake);
   gfx.drawBackgroundMap();
 
   bool gameOver = false;
@@ -158,7 +169,8 @@ void demoGame() {
       gfx.printScore(score, EEPROM.read(address));
      
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
-      food = Food();
+      food = Food(snake);
+      
       score++;
       playTone(NOTE_C5, TONE_DURATION);
       snake.growSnake();
@@ -200,7 +212,7 @@ void setup() {
   M5.begin(); 
   pinMode(buzzerPin, OUTPUT);
   gfx.drawMenu();
-  
+  randomSeed(analogRead(0));
   attachInterrupt(M5_BUTTON_RST, resetInterruptHandler, FALLING);
   timer.attach(15.0, demoGame); // restart timer when M5_BUTTON_RST is pressed
   attachInterrupt(M5_BUTTON_HOME, disableTimer, FALLING);

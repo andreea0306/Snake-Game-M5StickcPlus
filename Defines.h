@@ -3,11 +3,11 @@
 #define HEIGHT 234
 #define WIDTH 135
 #define GRID_SIZE 9
-#define THRESHOLD 5
+#define THRESHOLD 4
 #define THRESHOLD2 3
-#define SNAKE_SPEED_EASY 500
+#define SNAKE_SPEED_EASY 400
 #define SNAKE_SPEED_MEDIUM 300
-#define SNAKE_SPEED_HARD 100
+#define SNAKE_SPEED_HARD 150
 #define STARTX 18
 #define STARTY 18
 #define NOTE_C5  523

@@ -3,7 +3,8 @@
 #include <M5StickCPlus.h>
 #include "Defines.h"
 #include "Gfx.hpp"
-class Snake{
+
+class Snake {
 private :
   int direction;
   Gfx gfx;
@@ -18,7 +19,9 @@ public:
     body.push_back(std::make_pair(x-2*GRID_SIZE,y));
     gfx = graphics;
   }
-
+  Snake() {
+    
+  }
   void drawSnake() {
     for(int i=0; i<body.size();i++) {
       M5.Lcd.fillRect(body[i].first, body[i].second, GRID_SIZE, GRID_SIZE, BLACK);
@@ -29,6 +32,7 @@ public:
     std::pair<int,int> head = std::make_pair(body[0].first, body[0].second);
     //std::pair<int,int> tail = std::make_pair(getSnakeTail().first, getSnakeTail().second);
     // right
+    
     if(direction == 0) {
       head.first += GRID_SIZE;
     } else if(direction == 1) { 
@@ -40,8 +44,8 @@ public:
     }
     body.insert(body.begin(), head);
     body.pop_back();
-    gfx.drawBackgroundMap();
-    
+    //gfx.drawBackgroundMap();
+    gfx.updateMap(getSnakeTail().first, getSnakeTail().second);
   }
 
   void setSnakeDirection(int newDirection) {

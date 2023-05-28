@@ -49,6 +49,34 @@ public:
     }
   }
 
+  void updateMap(int x, int y) {
+    if((x+y)%2==0) {
+          switch(level){
+            case 0:
+              M5.Lcd.fillRect(x,y, grid_size, grid_size, C0);
+              break;
+            case 1:
+              M5.Lcd.fillRect(x,y, grid_size, grid_size, C2);
+              break;
+            case 2:
+              M5.Lcd.fillRect(x,y, grid_size, grid_size, C4);
+              break;
+          }
+        } else {
+          switch(level){
+            case 0:
+              M5.Lcd.fillRect(x,y, grid_size, grid_size, C1);
+              break;
+            case 1:
+              M5.Lcd.fillRect(x,y, grid_size, grid_size, C3);
+              break;
+            case 2:
+              M5.Lcd.fillRect(x,y, grid_size, grid_size, C5);
+              break;              
+          }
+        }
+  }
+
   void setLevel(int lvl) {
     this->level = lvl;
   }
