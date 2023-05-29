@@ -18,6 +18,8 @@ Gfx gfx(WIDTH, HEIGHT, GRID_SIZE); // create an instance of graphic class
 int snakeSpeed; // storages the value of speed depending on level dificulty
 Ticker timer; // timer
 int maxScore = EEPROM.read(address); // value of maxScore from eeprom 
+//  flag used for showing that system is in demo mode
+int flag = 0;
 
 void playTone(int frequency, int duration) {
   tone(buzzerPin, frequency, duration);
@@ -42,13 +44,17 @@ void gameLoop() {
     // compare data from sensor to a user defined thrashold 
     if(ax*10 > THRESHOLD && snake.getSnakeDirection() != 0) { // if direction is already opposite the command has no effect
       snake.setSnakeDirection(2); // left
+      Serial.write("2");
     } else if(ax*10 < -THRESHOLD && snake.getSnakeDirection() != 2) {
       snake.setSnakeDirection(0); // right
+      Serial.write("0");
     }
     else if(ay*10 > THRESHOLD && snake.getSnakeDirection() != 3) {
       snake.setSnakeDirection(1); // down
+      Serial.write("1");
     } else if(ay*10 < -THRESHOLD && snake.getSnakeDirection() != 1){
       snake.setSnakeDirection(3); // up
+      Serial.write("3");
     }
     snake.moveSnake();
     
@@ -122,6 +128,7 @@ void resetTimer() {
 
 void demoGame() {
   timer.detach();
+  flag = 1;
     // variables for storage the output of sensor
   float ax = 0, ay = 0, az = 0;
   score = 0;
@@ -200,6 +207,7 @@ void demoGame() {
   }
   delay(3000);
   timer.attach(15.0, demoGame);
+  flag = 0;
   gfx.drawMenu();
 }
 // when game starts timer is disabled
@@ -233,11 +241,12 @@ void loop(){
     delay(instructions_delay);
     gfx.drawMenu();
   } else if(digitalRead(M5_BUTTON_HOME) == LOW){
-    gameLoop();
-    delay(menu_delay);
-    gfx.drawMenu();
-    timer.attach(15.0, demoGame);
-    
+    if(flag == 0) {
+      gameLoop();
+      delay(menu_delay);
+      gfx.drawMenu();
+      timer.attach(15.0, demoGame);
+    }
   } else {
     while(digitalRead(M5_BUTTON_RST) == HIGH && digitalRead(M5_BUTTON_HOME) == HIGH) {
       
