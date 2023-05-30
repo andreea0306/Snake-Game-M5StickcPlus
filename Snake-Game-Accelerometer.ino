@@ -34,6 +34,10 @@ void gameLoop() {
   score = 0;
   Snake snake(STARTX, STARTY, gfx);
   Food food(snake);
+  String x = String(food.get_x_food());
+  String y = String(food.get_y_food());
+  Serial.write(x.c_str());
+  Serial.write(y.c_str());
   bool gameOver = false;
   gfx.drawBackgroundMap();
   // game play
@@ -45,16 +49,20 @@ void gameLoop() {
     if(ax*10 > THRESHOLD && snake.getSnakeDirection() != 0) { // if direction is already opposite the command has no effect
       snake.setSnakeDirection(2); // left
       Serial.write("2");
+      Serial.write(",");
     } else if(ax*10 < -THRESHOLD && snake.getSnakeDirection() != 2) {
       snake.setSnakeDirection(0); // right
       Serial.write("0");
+      Serial.write(",");
     }
     else if(ay*10 > THRESHOLD && snake.getSnakeDirection() != 3) {
       snake.setSnakeDirection(1); // down
       Serial.write("1");
+      Serial.write(",");
     } else if(ay*10 < -THRESHOLD && snake.getSnakeDirection() != 1){
       snake.setSnakeDirection(3); // up
       Serial.write("3");
+      Serial.write(",");
     }
     snake.moveSnake();
     
@@ -74,6 +82,12 @@ void gameLoop() {
      
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
       food = Food(snake);
+      x = String(food.get_x_food());
+      y = String(food.get_y_food());
+      Serial.write(x.c_str());
+      Serial.write(",");
+      Serial.write(y.c_str());
+      Serial.write(",");
       score++;
       playTone(NOTE_C5, TONE_DURATION);
       snake.growSnake();
@@ -116,21 +130,9 @@ void gameLoop() {
   
 }
 
-void resetInterruptHandler() {
-  resetTimer();
-}
-
-//  reset timer
-void resetTimer() {
-  timer.detach();
-  timer.attach(15.0, demoGame);
-}
-
 void demoGame() {
   timer.detach();
   flag = 1;
-    // variables for storage the output of sensor
-  float ax = 0, ay = 0, az = 0;
   score = 0;
   Snake snake(STARTX, STARTY, gfx);
   Food food(snake);
@@ -140,31 +142,24 @@ void demoGame() {
   // game play
   while(!gameOver) {
     
-    // getting data from sensor
-    //M5.IMU.getAccelData(&ax,&ay,&az);
-    ax = random(-5000,5000) / 10000.0;
-    ay = random(-5000,5000) / 10000.0;
-    Serial.println(ax);
-    Serial.println(ay);
-    delay(500);
-    // compare data from sensor to a user defined thrashold 
-    if(ax*10 > THRESHOLD2 && snake.getSnakeDirection() != 0) { // if direction is already opposite the command has no effect
-      snake.setSnakeDirection(2); // left
-    } else if(ax*10 < -THRESHOLD2 && snake.getSnakeDirection() != 2) {
-      snake.setSnakeDirection(0); // right
-    }
-    else if(ay*10 > THRESHOLD2 && snake.getSnakeDirection() != 3) {
-      snake.setSnakeDirection(1); // down
-    } else if(ay*10 < -THRESHOLD2 && snake.getSnakeDirection() != 1){
-      snake.setSnakeDirection(3); // up
-    }
+    int distanceX = food.get_x_food() - snake.getSnakeHead().first;
+    int distanceY = food.get_y_food() - snake.getSnakeHead().second;
+
+     if(distanceX > 0 && snake.getSnakeDirection() != 2) {
+      snake.setSnakeDirection(0);
+     } else if(distanceX < 0 && snake.getSnakeDirection() != 0) {
+      snake.setSnakeDirection(2);
+     } else if(distanceY > 0 && snake.getSnakeDirection() != 3) {
+      snake.setSnakeDirection(1);
+     } else if(distanceY < 0 && snake.getSnakeDirection() != 1) {
+      snake.setSnakeDirection(3);
+     }
+    
     snake.moveSnake();
     
     //checking collision with food
     if(snake.checkSnakeCollision()) {
-      gameOver = true;
-      gfx.drawBackgroundMap();
-      
+      gameOver = true;      
       maxScore = EEPROM.read(address);
       //Serial.print(maxScore);
       if(score > maxScore) {
@@ -177,10 +172,20 @@ void demoGame() {
      
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
       food = Food(snake);
-      
       score++;
       playTone(NOTE_C5, TONE_DURATION);
       snake.growSnake();
+      if(score == 5) {
+        gfx.setLevel(1);
+        //food.setLevel(1);
+        snake.setGfx(gfx);
+        gfx.drawBackgroundMap();
+      } else if(score == 10) {
+        gfx.setLevel(2);
+        //food.setLevel(2);
+        snake.setGfx(gfx);
+        gfx.drawBackgroundMap();
+      }
     }
     
     snake.drawSnake();
@@ -188,12 +193,14 @@ void demoGame() {
     
     // increasing dificulty by increasing the speed of snake
     if(score >= 0 && score < 5) {
+      food.setLevel(0);
       gfx.setLevel(0);
       snake.setGfx(gfx);
       snakeSpeed = SNAKE_SPEED_EASY;
-    } else if(score >= 2 && score < 10){
+    } else if(score >= 5 && score < 10){
       gfx.setLevel(1);
       snake.setGfx(gfx);
+      food.setLevel(1);
       snakeSpeed = SNAKE_SPEED_MEDIUM;
     } else {
       gfx.setLevel(2);
@@ -210,6 +217,17 @@ void demoGame() {
   flag = 0;
   gfx.drawMenu();
 }
+
+void resetInterruptHandler() {
+  resetTimer();
+}
+
+//  reset timer
+void resetTimer() {
+  timer.detach();
+  timer.attach(15.0, demoGame);
+}
+
 // when game starts timer is disabled
 void disableTimer() {
   timer.detach();

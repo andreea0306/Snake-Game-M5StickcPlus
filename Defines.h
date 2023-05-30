@@ -16,7 +16,7 @@
 #define basic_delay 50
 #define instructions_delay 8000 // 8 s for reading the instructions
 #define menu_delay 2000
-#define baud_rate 9600
+#define baud_rate 115200
 #define EEPROM_SIZE 1
 
 #define buzzerPin 10

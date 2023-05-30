@@ -64,8 +64,10 @@ public:
     }
     // checking collision with body
     
-    if(head.first == getSnakeTail().first && head.second == getSnakeTail().second) {
-      return true;
+    for(int i=1; i<body.size(); i++) {
+      if(head.first == body[i].first && head.second == body[i].second) {
+        return true;
+      }
     }
     
     return false;
@@ -75,6 +77,10 @@ public:
   }
   void growSnake() {
     body.push_back(getSnakeTail());
+  }
+
+  std::pair<int,int> getSnakeHead() {
+    return body[0];
   }
   
   void setGfx(Gfx graphics) {
