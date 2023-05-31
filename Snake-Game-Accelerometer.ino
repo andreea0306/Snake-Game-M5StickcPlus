@@ -34,10 +34,10 @@ void gameLoop() {
   score = 0;
   Snake snake(STARTX, STARTY, gfx);
   Food food(snake);
-  String x = String(food.get_x_food());
-  String y = String(food.get_y_food());
-  Serial.write(x.c_str());
-  Serial.write(y.c_str());
+//  String x = String(food.get_x_food());
+//  String y = String(food.get_y_food());
+//  Serial.write(x.c_str());
+//  Serial.write(y.c_str());
   bool gameOver = false;
   gfx.drawBackgroundMap();
   // game play
@@ -48,21 +48,13 @@ void gameLoop() {
     // compare data from sensor to a user defined thrashold 
     if(ax*10 > THRESHOLD && snake.getSnakeDirection() != 0) { // if direction is already opposite the command has no effect
       snake.setSnakeDirection(2); // left
-      Serial.write("2");
-      Serial.write(",");
     } else if(ax*10 < -THRESHOLD && snake.getSnakeDirection() != 2) {
       snake.setSnakeDirection(0); // right
-      Serial.write("0");
-      Serial.write(",");
     }
     else if(ay*10 > THRESHOLD && snake.getSnakeDirection() != 3) {
       snake.setSnakeDirection(1); // down
-      Serial.write("1");
-      Serial.write(",");
     } else if(ay*10 < -THRESHOLD && snake.getSnakeDirection() != 1){
       snake.setSnakeDirection(3); // up
-      Serial.write("3");
-      Serial.write(",");
     }
     snake.moveSnake();
     
@@ -82,12 +74,6 @@ void gameLoop() {
      
     } else if(snake.body[0].first == food.get_x_food() && snake.body[0].second == food.get_y_food()){
       food = Food(snake);
-      x = String(food.get_x_food());
-      y = String(food.get_y_food());
-      Serial.write(x.c_str());
-      Serial.write(",");
-      Serial.write(y.c_str());
-      Serial.write(",");
       score++;
       playTone(NOTE_C5, TONE_DURATION);
       snake.growSnake();
@@ -238,7 +224,7 @@ void setup() {
   M5.begin(); 
   pinMode(buzzerPin, OUTPUT);
   gfx.drawMenu();
-  randomSeed(analogRead(0));
+  randomSeed(analogRead(1));
   attachInterrupt(M5_BUTTON_RST, resetInterruptHandler, FALLING);
   timer.attach(15.0, demoGame); // restart timer when M5_BUTTON_RST is pressed
   attachInterrupt(M5_BUTTON_HOME, disableTimer, FALLING);
@@ -265,10 +251,24 @@ void loop(){
       gfx.drawMenu();
       timer.attach(15.0, demoGame);
     }
-  } else {
+  }  else {
     while(digitalRead(M5_BUTTON_RST) == HIGH && digitalRead(M5_BUTTON_HOME) == HIGH) {
-      
-      delay(basic_delay);
+      float ax = 0, ay = 0, az = 0;
+      M5.IMU.getAccelData(&ax,&ay,&az);
+    // compare data from sensor to a user defined thrashold 
+    if(ax*10 > THRESHOLD) { // if direction is already opposite the command has no effect
+      // left
+      Serial.write("2");
+    } else if(ax*10 < -THRESHOLD ) { // right
+      Serial.write("0");
+    }
+    else if(ay*10 > THRESHOLD ) {// down
+      Serial.write("1");
+    } else if(ay*10 < -THRESHOLD ){
+     // up
+      Serial.write("3");
+    }
+      delay(1000);
     }
   }
   delay(basic_delay);
