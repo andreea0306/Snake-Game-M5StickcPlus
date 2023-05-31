@@ -7,25 +7,18 @@ class Food{
 private:
   int x, y;
   int level;
-  std::vector<std::pair<int,int>> body;
+  // std::vector<std::pair<int,int>> body;
   Snake snk;
 public:
   Food(Snake s) {
     snk = s;
     //level = 0;
-    x = (random()%(WIDTH/GRID_SIZE))*GRID_SIZE;
-    y = (random()%(HEIGHT/GRID_SIZE))*GRID_SIZE;
-    for(int i=0; i<=snk.body.size();i++) {
-      do {
-        x = (random()%(WIDTH/GRID_SIZE))*GRID_SIZE;
-        y = (random()%(HEIGHT/GRID_SIZE))*GRID_SIZE;
-      }while(snk.body[i].first == x && snk.body[i].second == y);
-      
-//      if(snk.body[i].first == x || snk.body[i].second == y) {
-//        x = (random()%(WIDTH/GRID_SIZE))*GRID_SIZE;
-//        y = (random()%(HEIGHT/GRID_SIZE))*GRID_SIZE;
-//      }
-    }
+
+    do {
+      x = (random()%(WIDTH/GRID_SIZE))*GRID_SIZE;
+      y = (random()%(HEIGHT/GRID_SIZE))*GRID_SIZE;
+    }while(isFoodOnSnake(x, y, snk));
+    
   }
 
   Food(int X, int Y) {
@@ -33,6 +26,13 @@ public:
     y = Y;
   }
 
+  bool isFoodOnSnake(const int foodX, const int foodY, const Snake snk) {
+    for(auto &it : snk.body) {
+      if(it.first == foodX && it.second == foodY) return true;
+    }
+    return false;
+  }
+  
   void drawFood(){
     switch(level) {
       case 0:

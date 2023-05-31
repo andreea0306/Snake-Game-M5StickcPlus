@@ -3,6 +3,7 @@
 #include <utility> 
 #include <EEPROM.h>
 #include <Ticker.h>
+#include <stdio.h>
 #include "Gfx.hpp"
 #include "Snake.hpp"
 #include "Food.hpp"
@@ -34,10 +35,7 @@ void gameLoop() {
   score = 0;
   Snake snake(STARTX, STARTY, gfx);
   Food food(snake);
-//  String x = String(food.get_x_food());
-//  String y = String(food.get_y_food());
-//  Serial.write(x.c_str());
-//  Serial.write(y.c_str());
+
   bool gameOver = false;
   gfx.drawBackgroundMap();
   // game play
@@ -238,38 +236,42 @@ void setup() {
   EEPROM.begin(EEPROM_SIZE);
 }
 
+void sendDirections() {
+    float ax = 0, ay = 0, az = 0;
+  M5.IMU.getAccelData(&ax,&ay,&az);
+  // compare data from sensor to a user defined thrashold 
+  if(ax*10 > THRESHOLD2) { // if direction is already opposite the command has no effect
+    // left
+    Serial.write("2");
+  } else if(ax*10 < -THRESHOLD2 ) { // right
+    Serial.write("0");
+  }
+  else if(ay*10 > THRESHOLD2 ) {// down
+    Serial.write("1");
+  } else if(ay*10 < -THRESHOLD2 ){
+   // up
+    Serial.write("3");
+  }
+  delay(300);
+}
+
 void loop(){
-  
+  sendDirections();
   if(digitalRead(M5_BUTTON_RST) == LOW) {
+    timer.detach();
     gfx.drawInstructions();
     delay(instructions_delay);
     gfx.drawMenu();
+    timer.attach(15.0, demoGame);
   } else if(digitalRead(M5_BUTTON_HOME) == LOW){
+    while(digitalRead(M5_BUTTON_HOME) == LOW) 
     if(flag == 0) {
       gameLoop();
       delay(menu_delay);
       gfx.drawMenu();
       timer.attach(15.0, demoGame);
     }
-  }  else {
-    while(digitalRead(M5_BUTTON_RST) == HIGH && digitalRead(M5_BUTTON_HOME) == HIGH) {
-      float ax = 0, ay = 0, az = 0;
-      M5.IMU.getAccelData(&ax,&ay,&az);
-    // compare data from sensor to a user defined thrashold 
-    if(ax*10 > THRESHOLD) { // if direction is already opposite the command has no effect
-      // left
-      Serial.write("2");
-    } else if(ax*10 < -THRESHOLD ) { // right
-      Serial.write("0");
-    }
-    else if(ay*10 > THRESHOLD ) {// down
-      Serial.write("1");
-    } else if(ay*10 < -THRESHOLD ){
-     // up
-      Serial.write("3");
-    }
-      delay(1000);
-    }
   }
-  delay(basic_delay);
+  
+  //delay(basic_delay);
 }
