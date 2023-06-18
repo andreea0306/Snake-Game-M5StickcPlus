@@ -1,3 +1,4 @@
+
 #include <M5StickCPlus.h>
 #pragma once
 #define HEIGHT 234
@@ -13,13 +14,23 @@
 #define NOTE_C5  523
 #define TONE_DURATION 1000
 
+#define BUZZER_PIN GPIO_NUM_0
+#define BUZZER_CHANNEL 0
+
+
+#define triggered_home                           true // controls interrupt handler - home
+#define interrupt_trigger_home_type            RISING // interrupt  triggered_home on a RISING input
+
+#define triggered_rst true // controls interrupt handler - rst
+#define interrupt_trigger_rst_type RISING // interrupt  triggered_rst on a RISING input
+
 #define basic_delay 50
 #define instructions_delay 8000 // 8 s for reading the instructions
 #define menu_delay 2000
 #define baud_rate 115200
 #define EEPROM_SIZE 1
 
-#define buzzerPin 10
+#define buzzerPin GPIO_NUM_0
 #define address 0 // address where maxScore will be stored
 
 #define base_cursorX 0
