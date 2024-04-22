@@ -3,6 +3,6 @@ This project contains more functionalities:
 - it initializes buttons for user input;
 - interrupt service routines for handling button presses, one for the home button and another for the reset button;
 - game sound using an external passive buzzer
-- demo mode: system simulaates a pre-defined gameplay scenario, used for demonstraction purposes
+- demo mode: system simulaates a pre-defined gameplay scenario, used for demonstration purposes
 - game mode: Snake gameplay controlled using the accelerometer sensor inside M5StickCPlus embedded system
   
